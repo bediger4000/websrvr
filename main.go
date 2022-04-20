@@ -10,7 +10,7 @@ import (
 
 func main() {
 	portString := flag.String("p", "8080", "TCP port on which to listen")
-	addressString := flag.String("a", ":8080", "TCP address on which to listen")
+	addressString := flag.String("a", "", "TCP address on which to listen")
 	debug := flag.Bool("v", false, "verbose output per request")
 	logFile := flag.String("o", "websrvr.log", "log file")
 	dataFile := flag.String("d", "websrvr.data", "JSON data file")
