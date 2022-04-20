@@ -7,6 +7,7 @@ import (
 // Setup prepares Srvr struct for use once all the command line
 // flags data gets set in Srvr elements.
 func (s *Srvr) Setup() {
+
 	s.LogDescriptor = os.Stderr
 	if s.Logfile != "" {
 		if fd, err := os.OpenFile(s.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644); err != nil {
@@ -18,5 +19,18 @@ func (s *Srvr) Setup() {
 		}
 	} else {
 		s.Logfile = "stderr"
+	}
+
+	s.DataDescriptor = os.Stdout
+	if s.Datafile != "" {
+		if fd, err := os.OpenFile(s.Datafile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644); err != nil {
+			s.Infof("problem opening data file %q: %v", s.Logfile, err)
+			s.Infof("data written to stdout")
+		} else {
+			s.DataDescriptor = fd
+			s.Infof("data sent to file %q", s.Datafile)
+		}
+	} else {
+		s.Datafile = "stdout"
 	}
 }
