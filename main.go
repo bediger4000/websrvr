@@ -22,6 +22,7 @@ func main() {
 		Datafile: *dataFile,
 	}
 
+	srv.Setup()
 	srv.Routes()
 
 	s := &http.Server{
