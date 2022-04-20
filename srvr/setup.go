@@ -1,6 +1,7 @@
 package srvr
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -9,7 +10,7 @@ import (
 func (s *Srvr) Setup() {
 
 	s.LogDescriptor = os.Stderr
-	if s.Logfile != "" {
+	if s.Logfile != "" && s.Logfile != "stderr" && s.Logfile != "-" {
 		if fd, err := os.OpenFile(s.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644); err != nil {
 			s.Infof("problem opening log file %q: %v", s.Logfile, err)
 			s.Infof("logging to stderr")
@@ -19,6 +20,7 @@ func (s *Srvr) Setup() {
 		}
 	} else {
 		s.Logfile = "stderr"
+		s.Infof("logging stderr")
 	}
 
 	s.DataDescriptor = os.Stdout
@@ -32,5 +34,11 @@ func (s *Srvr) Setup() {
 		}
 	} else {
 		s.Datafile = "stdout"
+		s.Infof("data written to stdout")
 	}
+
+	if s.Address == "" {
+		s.Address = fmt.Sprintf(":%s", s.Port)
+	}
+	s.Infof("Listening on TCP address %q", s.Address)
 }
