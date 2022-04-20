@@ -8,6 +8,8 @@ import (
 // Srvr holds all info that's used across instances
 // of this web application.
 type Srvr struct {
+	Port           string
+	Address        string
 	Router         *http.ServeMux
 	Debug          bool
 	Logfile        string
