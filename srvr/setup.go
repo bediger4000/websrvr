@@ -4,6 +4,8 @@ import (
 	"os"
 )
 
+// Setup prepares Srvr struct for use once all the command line
+// flags data gets set in Srvr elements.
 func (s *Srvr) Setup() {
 	s.LogDescriptor = os.Stderr
 	if s.Logfile != "" {

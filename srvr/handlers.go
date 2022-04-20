@@ -19,11 +19,14 @@ var indexHTML = `
 </html>
 `
 
+// NameValuePair carries HTTP header names and values
 type NameValuePair struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
+// LogEntry holds HTTP request data in preparation for
+// JSON marshalling
 type LogEntry struct {
 	ReceptionTime time.Time        `json:"recpt_time"`
 	Method        string           `json:"method"`
