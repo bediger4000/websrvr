@@ -25,8 +25,6 @@ func (s *Srvr) Debugf(format string, a ...any) {
 
 // Data writes buffer to data fileL
 func (s *Srvr) Data(entry *LogEntry) {
-	if s.Debug {
-	}
 
 	if buf, err := json.Marshal(entry); err != nil {
 		s.Infof("marshalling log JSON: %v", err)
