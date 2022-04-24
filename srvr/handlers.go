@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-var indexHTML = `
-<html>
+var indexHTML = `<html>
 <head>
 </head>
 <body>
@@ -18,10 +17,6 @@ var indexHTML = `
 
 func (s *Srvr) handleSlash() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if s.Debug {
-			fmt.Printf("Enter handleSlash closure\n")
-			defer fmt.Printf("Exit handleSlash closure\n")
-		}
 
 		info := LogEntry{
 			ReceptionTime: time.Now(),
@@ -51,7 +46,23 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			}
 		}
 
-		s.Data(&info)
+		if err := r.ParseForm(); err == nil {
+			if len(r.Form) > 0 {
+				for key, values := range r.Form {
+					for _, value := range values {
+						nvp := &NameValuePair{
+							Name:  key,
+							Value: value,
+						}
+						info.Form = append(info.Form, nvp)
+					}
+				}
+			}
+		} else {
+			s.Infof("http.Request.ParseForm(): %v", err)
+		}
+
+		s.data <- &info
 
 		// Return request
 		w.Header()["Server"] = []string{"Apache/2.4.53 (Unix) PHP/8.1.4"}

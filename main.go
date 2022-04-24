@@ -36,5 +36,9 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
+	// signal handling
+	// s.Close()
+	// s.Shutdown()
+
 	log.Fatal(s.ListenAndServe())
 }
