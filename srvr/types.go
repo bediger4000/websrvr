@@ -19,6 +19,7 @@ type Srvr struct {
 	logMu         *sync.Mutex
 	Datafile      string
 	data          chan *LogEntry
+	OutputLines   int
 }
 
 // NameValuePair carries HTTP header names and values

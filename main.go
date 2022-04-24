@@ -14,15 +14,18 @@ func main() {
 	debug := flag.Bool("v", false, "verbose output per request")
 	logFile := flag.String("o", "websrvr.log", "log file")
 	dataFile := flag.String("d", "websrvr.data", "JSON data file")
+	outputLines := flag.Int("N", 50000, "output lines in data file")
+
 	flag.Parse()
 
 	srv := &srvr.Srvr{
-		Port:     *portString,
-		Address:  *addressString,
-		Router:   http.NewServeMux(),
-		Debug:    *debug,
-		Logfile:  *logFile,
-		Datafile: *dataFile,
+		Port:        *portString,
+		Address:     *addressString,
+		Router:      http.NewServeMux(),
+		Debug:       *debug,
+		Logfile:     *logFile,
+		Datafile:    *dataFile,
+		OutputLines: *outputLines,
 	}
 
 	srv.Setup()
