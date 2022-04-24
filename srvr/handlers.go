@@ -62,6 +62,30 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			s.Infof("http.Request.ParseForm(): %v", err)
 		}
 
+		contentTypes := r.Form["Content-Type"]
+		for _, ct := range contentTypes {
+			if ct == "multipart/form-data" {
+				if err := r.ParseMultipartForm(10 * 1024 * 1024); err == nil {
+					fmt.Printf("multi-part form %T, %v\n", r.MultipartForm, r.MultipartForm)
+					if r.MultipartForm != nil {
+						fmt.Printf("multi-part form\n")
+						for key, value := range r.MultipartForm.Value {
+							fmt.Printf("%q: %q\n", key, value)
+						}
+						/*
+							type Form struct {
+								Value map[string][]string
+								File  map[string][]*FileHeader
+							}
+						*/
+					} else {
+					}
+				} else {
+					s.Infof("http.Request.MultipartParseForm(): %v", err)
+				}
+			}
+		}
+
 		s.data <- &info
 
 		// Return request
