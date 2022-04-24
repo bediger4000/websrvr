@@ -21,7 +21,7 @@ func StartData(s *Srvr) chan *LogEntry {
 		C:           make(chan *LogEntry, 10),
 		Datafile:    s.Datafile,
 		S:           s,
-		OutputCount: 5,
+		OutputCount: s.OutputLines,
 	}
 
 	if s.Datafile != "" {
