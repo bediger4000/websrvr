@@ -42,5 +42,23 @@ type LogEntry struct {
 	Remote        string           `json:"remote_addr"`
 	Encoding      []string         `json:"transfer_encoding,omitempty"`
 	Headers       []*NameValuePair `json:"headers"`
+	Cookies       []*CookieEntry   `json:"cookies"`
 	Form          []*NameValuePair `json:"form"`
+}
+
+// CookieEntry holds HTTP cookie data
+type CookieEntry struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+
+	Path       string    `json:"path,omitempty"`        // optional
+	Domain     string    `json:"domain,omitempty"`      // optional
+	Expires    time.Time `json:"expires,omitempty"`     // optional
+	RawExpires string    `json:"raw_expires,omitempty"` // for reading cookies only
+	MaxAge     int       `json:"max_age"`
+	Secure     bool      `json:"secure"`
+	HttpOnly   bool      `json:"http_only"`
+	SameSite   int       `json:"same_site"`
+	Raw        string    `json:"raw"`
+	Unparsed   []string  `json:"unparsed,omitempty"`
 }
