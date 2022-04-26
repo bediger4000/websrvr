@@ -66,18 +66,14 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 		contentTypes := r.Header["Content-Type"]
 		for _, ct := range contentTypes {
 			if strings.HasPrefix(ct, "multipart/form-data") {
-				fmt.Printf("multipart/form-data 0\n")
 				multiPart = true
 				break
 			}
 		}
 
 		if multiPart {
-			fmt.Printf("multipart/form-data 1\n")
 			if err := r.ParseMultipartForm(10 * 1024 * 1024); err == nil {
-				fmt.Printf("multipart/form-data 2\n")
 				if r.MultipartForm != nil {
-					fmt.Printf("multipart/form-data 3\n")
 					for key, values := range r.MultipartForm.Value {
 						for _, value := range values {
 							nvp := &NameValuePair{
@@ -89,8 +85,28 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 					}
 					for field, fileheaders := range r.MultipartForm.File {
 						for _, value := range fileheaders {
-							fmt.Printf("field %q\n", field)
 							fmt.Printf("\tfilename %q\n", value.Filename)
+							f, h, e := r.FormFile(field)
+							if e != nil {
+								fmt.Printf("Problem on r.FormFile(%q): %v\n", field, e)
+								continue
+							}
+							fmt.Printf("\tSize: %d\n", h.Size)
+							fmt.Printf("\tMIME type(s):\n")
+							for mimekey, mimevalue := range h.Header {
+								fmt.Printf("\t\t%q:%q\n", mimekey, mimevalue)
+							}
+							buf := make([]byte, 1024)
+							sum := 0
+							n := 0
+							var rerr error
+							for n, rerr = f.Read(buf); n > 0 && err == nil; n, err = f.Read(buf) {
+								fmt.Printf("%s", string(buf))
+								sum += n
+							}
+							if rerr != nil {
+								fmt.Printf("Final error: %v\n", err)
+							}
 						}
 					}
 					/*
