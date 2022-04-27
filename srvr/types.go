@@ -20,6 +20,7 @@ type Srvr struct {
 	Datafile      string
 	data          chan *LogEntry
 	OutputLines   int
+	DownloadDir   string
 }
 
 // NameValuePair carries HTTP header names and values
@@ -42,8 +43,18 @@ type LogEntry struct {
 	Remote        string           `json:"remote_addr"`
 	Encoding      []string         `json:"transfer_encoding,omitempty"`
 	Headers       []*NameValuePair `json:"headers"`
-	Cookies       []*CookieEntry   `json:"cookies"`
-	Form          []*NameValuePair `json:"form"`
+	Cookies       []*CookieEntry   `json:"cookies,omitempty"`
+	Form          []*NameValuePair `json:"form,omitempty"`
+	Files         []*FileData      `json:"files,omitempty"`
+}
+
+// FileData holds info on 1 file for data logging,
+// plus reference (by name) to saved file
+type FileData struct {
+	FormField     string `json:"field"`     // name of upload input field
+	Size          int64  `json:"size"`      // size of uploaded file
+	FileName      string `json:"filename"`  // uploaded file name - as sent by remote
+	LocalFileName string `json:"localfile"` // uploaded file name here
 }
 
 // CookieEntry holds HTTP cookie data
@@ -51,14 +62,14 @@ type CookieEntry struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 
-	Path       string    `json:"path,omitempty"`        // optional
-	Domain     string    `json:"domain,omitempty"`      // optional
-	Expires    time.Time `json:"expires,omitempty"`     // optional
-	RawExpires string    `json:"raw_expires,omitempty"` // for reading cookies only
-	MaxAge     int       `json:"max_age"`
-	Secure     bool      `json:"secure"`
-	HttpOnly   bool      `json:"http_only"`
-	SameSite   int       `json:"same_site"`
-	Raw        string    `json:"raw"`
+	Path       string    `json:"path,omitempty"`
+	Domain     string    `json:"domain,omitempty"`
+	Expires    time.Time `json:"expires,omitempty"`
+	RawExpires string    `json:"raw_expires,omitempty"`
+	MaxAge     int       `json:"max_age,omitempty"`
+	Secure     bool      `json:"secure,omitempty"`
+	HttpOnly   bool      `json:"http_only,omitempty"`
+	SameSite   int       `json:"same_site,omitempty"`
+	Raw        string    `json:"raw,omitempty"`
 	Unparsed   []string  `json:"unparsed,omitempty"`
 }
