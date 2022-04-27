@@ -2,6 +2,7 @@ package srvr
 
 import (
 	"net/http"
+	"net/textproto"
 	"os"
 	"sync"
 	"time"
@@ -43,18 +44,19 @@ type LogEntry struct {
 	Remote        string           `json:"remote_addr"`
 	Encoding      []string         `json:"transfer_encoding,omitempty"`
 	Headers       []*NameValuePair `json:"headers"`
-	Cookies       []*CookieEntry   `json:"cookies,omitempty"`
-	Form          []*NameValuePair `json:"form,omitempty"`
-	Files         []*FileData      `json:"files,omitempty"`
+	Cookies       []*CookieEntry   `json:"cookies"`
+	Form          []*NameValuePair `json:"form"`
+	Files         []*FileData      `json:"files"`
 }
 
 // FileData holds info on 1 file for data logging,
 // plus reference (by name) to saved file
 type FileData struct {
-	FormField     string `json:"field"`     // name of upload input field
-	Size          int64  `json:"size"`      // size of uploaded file
-	FileName      string `json:"filename"`  // uploaded file name - as sent by remote
-	LocalFileName string `json:"localfile"` // uploaded file name here
+	FormField     string               `json:"field"`     // name of upload input field
+	Size          int64                `json:"size"`      // size of uploaded file
+	FileName      string               `json:"filename"`  // uploaded file name - as sent by remote
+	LocalFileName string               `json:"localfile"` // uploaded file name here
+	MimeGarbage   textproto.MIMEHeader `json:"mimeinfo"`
 }
 
 // CookieEntry holds HTTP cookie data
