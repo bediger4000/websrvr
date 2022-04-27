@@ -32,4 +32,12 @@ func (s *Srvr) Setup() {
 		s.Address = fmt.Sprintf(":%s", s.Port)
 	}
 	s.Infof("Listening on TCP address %q", s.Address)
+
+	if err := os.MkdirAll(s.DownloadDir, 0o777); err != nil {
+		s.Infof("problem with download directory %s/", s.DownloadDir, err)
+		s.Infof("not saving downloaded files")
+		s.DownloadDir = ""
+	} else {
+		s.Infof("Any downloaded files end up in %s/", s.DownloadDir)
+	}
 }
