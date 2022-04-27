@@ -42,7 +42,7 @@ type LogEntry struct {
 	ContentLength int64            `json:"content_len"`
 	Host          string           `json:"host_addr"`
 	Remote        string           `json:"remote_addr"`
-	Encoding      []string         `json:"transfer_encoding,omitempty"`
+	Encoding      []string         `json:"transfer_encoding"`
 	Headers       []*NameValuePair `json:"headers"`
 	Cookies       []*CookieEntry   `json:"cookies"`
 	Form          []*NameValuePair `json:"form"`
