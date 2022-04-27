@@ -15,6 +15,7 @@ func main() {
 	logFile := flag.String("o", "websrvr.log", "log file")
 	dataFile := flag.String("d", "websrvr.data", "JSON data file")
 	outputLines := flag.Int("N", 50000, "output lines in data file")
+	downloadDir := flag.String("D", "downloads", "downloaded file directory")
 
 	flag.Parse()
 
@@ -26,6 +27,7 @@ func main() {
 		Logfile:     *logFile,
 		Datafile:    *dataFile,
 		OutputLines: *outputLines,
+		DownloadDir: *downloadDir,
 	}
 
 	srv.Setup()
