@@ -46,8 +46,11 @@ func saveData(s *Srvr, r *http.Request) {
 
 	if len(r.TransferEncoding) > 0 {
 		info.Encoding = r.TransferEncoding
+	} else {
+		info.Encoding = make([]string, 0)
 	}
 
+	info.Headers = make([]*NameValuePair, 0)
 	for key, values := range r.Header {
 		for _, value := range values {
 			nvp := &NameValuePair{
@@ -58,6 +61,9 @@ func saveData(s *Srvr, r *http.Request) {
 		}
 	}
 
+	// Set some struct elements to a zero-length slice to prevent
+	// JSON output from being "slicename": null
+	info.Cookies = make([]*CookieEntry, 0)
 	for _, c := range r.Cookies() {
 		ce := &CookieEntry{
 			Name:       c.Name,
@@ -83,6 +89,9 @@ func saveData(s *Srvr, r *http.Request) {
 			break
 		}
 	}
+
+	info.Files = make([]*FileData, 0)
+	info.Form = make([]*NameValuePair, 0)
 
 	if multiPart {
 		if err := r.ParseMultipartForm(10 * 1024 * 1024); err == nil {
@@ -118,7 +127,7 @@ func saveData(s *Srvr, r *http.Request) {
 							Size:          h.Size,
 							FileName:      h.Filename,
 							LocalFileName: localFileName,
-							// should put in h.Header
+							MimeGarbage:   h.Header,
 						}
 						if !skipOutput {
 							n, err := io.Copy(fout, fin)
