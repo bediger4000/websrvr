@@ -14,6 +14,7 @@ func (s *Srvr) Setup() {
 
 	s.LogDescriptor = os.Stderr
 	if s.Logfile != "" && s.Logfile != "stderr" && s.Logfile != "-" {
+		// should check if file name s.LogFile exists. If so, move it to a numbered version.
 		if fd, err := os.OpenFile(s.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644); err != nil {
 			s.Infof("problem opening log file %q: %v", s.Logfile, err)
 			s.Infof("logging to stderr")
