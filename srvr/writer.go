@@ -38,6 +38,13 @@ func StartData(s *Srvr) chan *LogEntry {
 }
 
 func (o *Output) openDataFile() {
+	if dstDataFile, err := findLogFile(o.Datafile); err == nil {
+		if o.Datafile != dstDataFile {
+			if err := os.Rename(o.Datafile, dstDataFile); err != nil {
+				fmt.Fprintf(os.Stderr, "problem moving %q to %q: %v\n", o.Datafile, dstDataFile, err)
+			}
+		}
+	}
 	if fd, err := os.OpenFile(o.Datafile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644); err != nil {
 		o.S.Infof("problem opening data file %q: %v", o.Datafile, err)
 		o.S.Infof("data written to stdout")
