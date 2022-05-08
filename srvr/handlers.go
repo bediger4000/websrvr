@@ -35,6 +35,10 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			handleFaviconIco(w, r)
 			return
 		}
+		if wsoRequest(r) {
+			handleWso(w, r)
+			return
+		}
 
 		// Return request
 		fmt.Fprintf(w, indexHTML, time.Now().Format(time.RFC3339))
