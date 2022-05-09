@@ -95,6 +95,47 @@ func saveData(s *Srvr, r *http.Request) {
 		info.Cookies = append(info.Cookies, ce)
 	}
 
+	info.Files = make([]*FileData, 0)
+	info.Form = make([]*NameValuePair, 0)
+
+	if r.ContentLength > 0 {
+		s.Infof("content length %d > 0", r.ContentLength)
+		buffer := make([]byte, r.ContentLength)
+		n, err := r.Body.Read(buffer)
+		if f, ok := r.Body.(*os.File); ok {
+			f.Seek(0, os.SEEK_SET)
+		}
+		if err != nil {
+			s.Infof("reading %d body bytes: %v", r.ContentLength, err)
+		} else {
+			s.Infof("read %d body bytes", n)
+			if n != int(r.ContentLength) {
+				s.Infof("read %d body bytes, wanted to read %d", n, r.ContentLength)
+			}
+			hash := sha256.Sum256(buffer)
+			localFileName := fmt.Sprintf("%s/%s", s.DownloadDir, hex.EncodeToString(hash[:]))
+			s.Infof("local file name ", localFileName)
+			fout, err := os.Create(localFileName)
+			if err != nil {
+				s.Infof("creating %s: %v", localFileName, err)
+			} else {
+				n, err := fout.Write(buffer)
+				if err != nil {
+					s.Infof("filling %s with $d bytes: %v", localFileName, len(buffer), err)
+				} else if n != len(buffer) {
+					s.Infof("filling %s wrote %d bytes, wanted to write %d", localFileName, n, len(buffer))
+				}
+				fd := &FileData{
+					FormField:     "whole body",
+					Size:          int64(n),
+					LocalFileName: localFileName,
+				}
+				info.Files = append(info.Files, fd)
+			}
+			fout.Close()
+		}
+	}
+
 	multiPart := false
 	contentTypes := r.Header["Content-Type"]
 	for _, ct := range contentTypes {
@@ -103,9 +144,6 @@ func saveData(s *Srvr, r *http.Request) {
 			break
 		}
 	}
-
-	info.Files = make([]*FileData, 0)
-	info.Form = make([]*NameValuePair, 0)
 
 	if multiPart {
 		if err := r.ParseMultipartForm(10 * 1024 * 1024); err == nil {
