@@ -47,6 +47,7 @@ type LogEntry struct {
 	Cookies       []*CookieEntry   `json:"cookies"`
 	Form          []*NameValuePair `json:"form"`
 	Files         []*FileData      `json:"files"`
+	MultiPartFile string           `json:"multipart_localfile"`
 }
 
 // FileData holds info on 1 file for data logging,
