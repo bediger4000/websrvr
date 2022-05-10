@@ -1,6 +1,7 @@
 package srvr
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -35,6 +36,8 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			handleFaviconIco(w, r)
 			return
 		}
+		// What other well-know files?
+		// sitemap.xml
 		if wsoRequest(r) {
 			handleWso(w, r)
 			return
@@ -99,41 +102,33 @@ func saveData(s *Srvr, r *http.Request) {
 	info.Form = make([]*NameValuePair, 0)
 
 	if r.ContentLength > 0 {
-		s.Infof("content length %d > 0", r.ContentLength)
-		buffer := make([]byte, r.ContentLength)
-		n, err := r.Body.Read(buffer)
-		if f, ok := r.Body.(*os.File); ok {
-			f.Seek(0, os.SEEK_SET)
-		}
+		// Save Body bytes to a file
+		buffer, err := io.ReadAll(r.Body)
 		if err != nil {
-			s.Infof("reading %d body bytes: %v", r.ContentLength, err)
+			s.Infof("problem reading %d body bytes: %v", r.ContentLength, err)
 		} else {
-			s.Infof("read %d body bytes", n)
-			if n != int(r.ContentLength) {
-				s.Infof("read %d body bytes, wanted to read %d", n, r.ContentLength)
-			}
 			hash := sha256.Sum256(buffer)
+			// Identical buffers from different POST requests end up with same name.
+			// That's OK: keep from using local disk space to store dupes.
 			localFileName := fmt.Sprintf("%s/%s", s.DownloadDir, hex.EncodeToString(hash[:]))
-			s.Infof("local file name ", localFileName)
 			fout, err := os.Create(localFileName)
+			defer fout.Close()
 			if err != nil {
-				s.Infof("creating %s: %v", localFileName, err)
+				s.Infof("problem creating %s: %v", localFileName, err)
 			} else {
 				n, err := fout.Write(buffer)
 				if err != nil {
-					s.Infof("filling %s with $d bytes: %v", localFileName, len(buffer), err)
+					s.Infof("problem writing %s with %d body bytes: %v", localFileName, len(buffer), err)
 				} else if n != len(buffer) {
-					s.Infof("filling %s wrote %d bytes, wanted to write %d", localFileName, n, len(buffer))
+					s.Infof("problem writing %s wrote %d body bytes, wanted to write %d", localFileName, n, len(buffer))
 				}
-				fd := &FileData{
-					FormField:     "whole body",
-					Size:          int64(n),
-					LocalFileName: localFileName,
-				}
-				info.Files = append(info.Files, fd)
+				info.MultiPartFile = localFileName
 			}
-			fout.Close()
 		}
+
+		// Since r.Body got read, replace with the buffer created to hold it,
+		// so that request.ParseForm or request.ParseMultipartForm
+		r.Body = io.NopCloser(bytes.NewBuffer(buffer))
 	}
 
 	multiPart := false
@@ -146,8 +141,12 @@ func saveData(s *Srvr, r *http.Request) {
 	}
 
 	if multiPart {
+		// Save the multipart form data as such: it's worthwhile having the
+		// form fields and values seperately from the raw data saved above
 		if err := r.ParseMultipartForm(10 * 1024 * 1024); err == nil {
 			if r.MultipartForm != nil {
+
+				// name/value pairs
 				for key, values := range r.MultipartForm.Value {
 					for _, value := range values {
 						nvp := &NameValuePair{
@@ -157,14 +156,20 @@ func saveData(s *Srvr, r *http.Request) {
 						info.Form = append(info.Form, nvp)
 					}
 				}
+
+				// uploaded files, this is gross.
 				for field, fileheaders := range r.MultipartForm.File {
 					for _, value := range fileheaders {
-						// fmt.Printf("\tfilename %q\n", value.Filename)
 						fin, h, e := r.FormFile(field)
 						if e != nil {
 							s.Infof("Problem on r.FormFile(%q): %v\n", field, e)
 							continue
 						}
+						// hopefully a unique local file name, even though this will probably
+						// end up with byte-duplicate local file contents. It's difficult
+						// to get the uploaded files' bytes for the hash calc (as above for the
+						// raw multi-part data) because http.Request makes the files' data
+						// available as a *os.File.
 						hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%s:%s", field, value.Filename, time.Now().Format(time.RFC3339))))
 						localFileName := fmt.Sprintf("%s/%s", s.DownloadDir, hex.EncodeToString(hash[:]))
 						fout, err := os.Create(localFileName)
@@ -196,7 +201,7 @@ func saveData(s *Srvr, r *http.Request) {
 					}
 				}
 			} else {
-				s.Infof("nil multi-part form\n")
+				s.Infof("nil multi-part form")
 			}
 		} else {
 			s.Infof("http.Request.MultipartParseForm(): %v", err)
