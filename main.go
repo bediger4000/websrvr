@@ -34,10 +34,11 @@ func main() {
 	srv.Routes()
 
 	s := &http.Server{
-		Addr:           srv.Address,
-		Handler:        srv.Router,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		Addr:    srv.Address,
+		Handler: srv.Router,
+		// long timeouts to allow us to tarpit some requests
+		ReadTimeout:    60 * time.Second,
+		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
