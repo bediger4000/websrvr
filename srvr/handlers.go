@@ -24,7 +24,7 @@ var indexHTML = `<html>
 func (s *Srvr) handleSlash() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		saveData(s, r)
+		logentry := saveData(s, r)
 
 		gmt, err := time.LoadLocation("GMT")
 		if err != nil {
@@ -57,14 +57,16 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			return
 		}
 
-		if strings.HasPrefix(r.Method, "HNAP") {
+		if strings.HasPrefix(r.URL.String(), "HNAP") {
 			handleHnap(w, r)
+			s.Infof("HNAP handled")
 			return
 		}
 		// What other well-know files?
 		// sitemap.xml
-		if wsoRequest(r) {
-			handleWso(w, r)
+		if wsoRequest(r, logentry) {
+			handleWso(w, r, logentry)
+			s.Infof("WSO handled")
 			return
 		}
 
@@ -73,7 +75,7 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 	}
 }
 
-func saveData(s *Srvr, r *http.Request) {
+func saveData(s *Srvr, r *http.Request) *LogEntry {
 	info := LogEntry{
 		ReceptionTime: time.Now(),
 		Method:        r.Method,
@@ -250,4 +252,6 @@ func saveData(s *Srvr, r *http.Request) {
 	}
 
 	s.data <- &info
+
+	return &info
 }
