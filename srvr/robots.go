@@ -1,23 +1,14 @@
 package srvr
 
 import (
+	_ "embed"
 	"fmt"
 	"net/http"
 	"strconv"
 )
 
-var robotsTxt = `User-agent: Googlebot
-Disallow: /wp/
-
-User-agent: *
-Allow: /
-
-User-agent: *
-Disallow: /porn
-
-User-agent: *
-Disallow: /flapjackattack
-`
+//go:embed "robots.txt"
+var robotsTxt string
 
 func handleRobotsTxt(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")

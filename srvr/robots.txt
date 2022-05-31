@@ -1,0 +1,11 @@
+`User-agent: Googlebot
+Disallow: /wp/
+
+User-agent: *
+Allow: /
+
+User-agent: *
+Disallow: /porn
+
+User-agent: *
+Disallow: /flapjackattack
