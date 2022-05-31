@@ -62,8 +62,12 @@ func (s *Srvr) handleSlash() http.HandlerFunc {
 			s.Infof("HNAP handled")
 			return
 		}
-		// What other well-know files?
+
+		// How about a zip bomb for Accept-Encoding: gzip, deflate?
+		// What other well-known files?
 		// sitemap.xml
+		// xmlrpc.ph
+		// wp-login.php
 		if wsoRequest(r, logentry) {
 			handleWso(w, r, logentry)
 			s.Infof("WSO handled")
